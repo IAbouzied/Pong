@@ -8,11 +8,11 @@
 #include "Objects/Globals.h"
 #include "Objects/Graphics.h"
 #include "Objects/Ball.h"
+#include "Objects/Scoreboard.h"
 
 //These variables were made so that the classes could interact.
-int enemyVelocity;
-int paddleScore = 0;
-int enemyScore = 0;
+int playerScore = 0;
+int cpuScore = 0;
 
 class Paddle
 {
@@ -128,7 +128,6 @@ public:
 		{
 			jump();
 		}
-		enemyVelocity = velocity;
 
 		ball.bounceOffPaddle(velocity, y, true);
 	}
@@ -151,34 +150,6 @@ private:
 	int maxFallVel;
 	int jumpBoost;
 	int velocity;
-};
-
-class Scoreboard
-{
-public:
-	Scoreboard() {}
-
-	Scoreboard(Graphics &graphics)
-	{
-		scoreTexture = graphics.loadTexture("Sprites/Scoreboard.png");
-	}
-
-	//Renders the scores.
-	void render(Graphics &graphics)
-	{
-		int pyCord = 128 * paddleScore;
-		int eyCord = 128 * enemyScore;
-		SDL_Rect RpaddleScore = { 0, pyCord, 128, 128 };
-		SDL_Rect paddleRQ = { 0, 0, 128, 128 };
-		SDL_Rect RenemyScore = { 0, eyCord, 128, 128 };
-		SDL_Rect EnemyRQ = { 320, 0, 128, 128 };
-		
-		graphics.blitSurface(scoreTexture, &RpaddleScore, &paddleRQ);
-		graphics.blitSurface(scoreTexture, &RenemyScore, &EnemyRQ);
-
-	}
-private:
-	SDL_Texture* scoreTexture;
 };
 
 int main(int argc, char* args[]) 
@@ -227,7 +198,7 @@ int main(int argc, char* args[])
 		//Game loop
 		if (gameStarted == true)
 		{
-			scoreboard.render(graphics);
+			scoreboard.render(graphics, playerScore, cpuScore);
 
 			//Moving
 			paddle.move(ball);
@@ -240,10 +211,10 @@ int main(int argc, char* args[])
 			enemyPaddle.render(graphics);
 		}
 
-		if (scoreChange == 1) paddleScore++;
-		else if (scoreChange == -1) enemyScore++;
+		if (scoreChange == 1) playerScore++;
+		else if (scoreChange == -1) cpuScore++;
 
-		if (paddleScore > 10)
+		if (playerScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
@@ -251,7 +222,7 @@ int main(int argc, char* args[])
 			graphics.clear();
 		}
 
-		if (enemyScore > 10)
+		if (cpuScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
