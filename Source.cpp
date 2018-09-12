@@ -5,9 +5,8 @@
 #include <cmath>
 #include <Windows.h>
 
-//Globals
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+#include "Objects/Globals.h"
+#include "Objects/Graphics.h"
 
 //These variables were made so that the classes could interact.
 int yPaddle;
@@ -16,96 +15,8 @@ int yBall;
 int paddleVelocity;
 int enemyVelocity;
 int ballxVelocity;
-int ballyVelocity;
-int xBall;
 int paddleScore = 0;
 int enemyScore = 0;
-
-//SDL Globals
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Texture* gTexture = NULL;
-
-//Initializes the window, renderer, and PNG/SDL_Image stuff
-bool init()
-{
-	bool success = true;
-
-	//Initialize SDL. < 0 means that initialization failed.
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
-	{
-		std::cout << "Couldnt initialize SDL" << std::endl;
-		success = false;
-	}
-	else
-	{
-		//Creating the window.
-		window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, NULL);
-		if (window == NULL)
-		{
-			std::cout << "Couldnt create window" << std::endl;
-			success = false;
-		}
-		else
-		{
-			//Creating the renderer. The Flags make the renderer match the monitor refresh rate.
-			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (renderer == NULL)
-			{
-				std::cout << "Couldnt create renderer" << std::endl;
-				success = false;
-			}
-			else
-			{
-				//Setting the renderer color. Still not sure why this has to be done.
-				SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-
-				//Making it possible to load PNG images.
-				int imgFlags = IMG_INIT_PNG;
-				if (!(IMG_Init(imgFlags) & imgFlags))
-				{
-					std::cout << "Couldnt initialize SDL_Image" << std::endl;
-					success = false;
-				}
-			}
-		}
-	}
-
-	return success;
-}
-
-//Function for giving textures their image.
-SDL_Texture* loadTexture(std::string path)
-{
-	//Loads a texture through this process. Texture made. Surface made. Texture made into surface. Surface deleted. Texture returned.
-	SDL_Texture* newTexture = NULL;
-	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-	newTexture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-	SDL_FreeSurface(loadedSurface);
-	
-	return newTexture;
-}
-
-//Loads all of the pictures needed.
-void loadMedia()
-{
-	//Backgroung picture.
-	gTexture = loadTexture("Sprites/LoadingScreen.png");
-}
-
-//Shuts down everything before exiting the application.
-void close()
-{
-	//Exits out of everything. Ball and Paddle sprites not included.
-	SDL_DestroyWindow(window);
-	SDL_DestroyTexture(gTexture);
-	gTexture = NULL;
-	SDL_DestroyRenderer(renderer);
-	window = NULL;
-	renderer = NULL;
-	IMG_Quit();
-	SDL_Quit();
-}
 
 class Paddle
 {
@@ -113,7 +24,12 @@ public:
 	//Initializes the paddle with all of its characteristics.
 	Paddle()
 	{
-		paddleTexture = loadTexture("Sprites/Paddle.png");
+
+	}
+
+	Paddle(Graphics &graphics)
+	{
+		paddleTexture = graphics.loadTexture("Sprites/Paddle.png");
 		y = 470 - 96;
 		maxJumpVel = -15;
 		maxFallVel = 15;
@@ -149,10 +65,10 @@ public:
 	}
 
 	//Renders the paddle to the screen.
-	void render(SDL_Renderer* renderer)
+	void render(Graphics &graphics)
 	{
 		SDL_Rect renderQuad = { 10, y, 32, 96 };
-		SDL_RenderCopy(renderer, paddleTexture, NULL, &renderQuad);
+		graphics.blitSurface(paddleTexture, NULL, &renderQuad);
 	}
 
 	//Takes input to jump.
@@ -176,9 +92,11 @@ private:
 class EnemyPaddle
 {
 public:
-	EnemyPaddle()
+	EnemyPaddle() {}
+
+	EnemyPaddle(Graphics &graphics)
 	{
-		paddleTexture = loadTexture("Sprites/EnemyPaddle.png");
+		paddleTexture = graphics.loadTexture("Sprites/EnemyPaddle.png");
 		y = 470 - 96;
 		maxJumpVel = -15;
 		maxFallVel = 15;
@@ -223,10 +141,10 @@ public:
 		velocity = jumpBoost;
 	}
 
-	void render(SDL_Renderer* renderer)
+	void render(Graphics &graphics)
 	{
-		SDL_Rect renderQuad = { SCREEN_WIDTH - 42, y, 32, 96 };
-		SDL_RenderCopy(renderer, paddleTexture, NULL, &renderQuad);
+		SDL_Rect renderQuad = { globals::SCREEN_WIDTH - 42, y, 32, 96 };
+		graphics.blitSurface(paddleTexture, NULL, &renderQuad);
 	}
 
 private:
@@ -241,9 +159,11 @@ private:
 class Ball
 {
 public:
-	Ball()
+	Ball() {}
+
+	Ball(Graphics &graphics)
 	{
-		ballTexture = loadTexture("Sprites/Ball.png");
+		ballTexture = graphics.loadTexture("Sprites/Ball.png");
 		xPos = 480;
 		yPos = 224;
 		xVel = 10;
@@ -256,7 +176,7 @@ public:
 		xPos = xPos + xVel;
 		yPos = yPos + yVel;
 
-		if (xPos > SCREEN_WIDTH)
+		if (xPos > globals::SCREEN_WIDTH)
 		{
 			xPos = 160;
 			yPos = 224;
@@ -272,9 +192,9 @@ public:
 			enemyScore += 1;
 			Sleep(200);
 		}
-		if (yPos > SCREEN_HEIGHT - 32)
+		if (yPos > globals::SCREEN_HEIGHT - 32)
 		{
-			yPos = SCREEN_HEIGHT- 32;
+			yPos = globals::SCREEN_HEIGHT- 32;
 			yVel = -yVel;
 		}
 		if (yPos < 0)
@@ -287,7 +207,7 @@ public:
 			xVel = -xVel;
 			yVel = yVel + paddleVelocity / 2;
 		}
-		if (xPos / (SCREEN_WIDTH - 74) == 1 && xPos % (SCREEN_WIDTH - 74) <= xVel && yPos > yEnemy - 32 && yPos < yEnemy + 96 && xVel > 0)
+		if (xPos / (globals::SCREEN_WIDTH - 74) == 1 && xPos % (globals::SCREEN_WIDTH - 74) <= xVel && yPos > yEnemy - 32 && yPos < yEnemy + 96 && xVel > 0)
 		{
 			yVel = yVel + enemyVelocity / 2;
 			xVel = -xVel;
@@ -297,19 +217,17 @@ public:
 			yVel = yVel / abs(yVel) * 12;
 		}
 		yBall = yPos;
-		xBall = xPos;
 		ballxVelocity = xVel;
-		ballyVelocity = yVel;
 	}
 
 	//Renders the ball to the screen.
-	void Render(SDL_Renderer* renderer)
+	void Render(Graphics &graphics)
 	{
 		SDL_Rect renderQuad = { xPos, yPos, 32, 32 };
-		SDL_RenderCopy(renderer, ballTexture, NULL, &renderQuad);
+		graphics.blitSurface(ballTexture, NULL, &renderQuad);
 	}
 private:
-	int xPos, yPos, xVel, yVel, xBall;
+	int xPos, yPos, xVel, yVel;
 	SDL_Texture* ballTexture;
 
 
@@ -318,13 +236,15 @@ private:
 class Scoreboard
 {
 public:
-	Scoreboard()
+	Scoreboard() {}
+
+	Scoreboard(Graphics &graphics)
 	{
-		scoreTexture = loadTexture("Sprites/Scoreboard.png");
+		scoreTexture = graphics.loadTexture("Sprites/Scoreboard.png");
 	}
 
 	//Renders the scores.
-	void render(SDL_Renderer* renderer)
+	void render(Graphics &graphics)
 	{
 		int pyCord = 128 * paddleScore;
 		int eyCord = 128 * enemyScore;
@@ -333,8 +253,8 @@ public:
 		SDL_Rect RenemyScore = { 0, eyCord, 128, 128 };
 		SDL_Rect EnemyRQ = { 320, 0, 128, 128 };
 		
-		SDL_RenderCopy(renderer, scoreTexture, &RpaddleScore, &paddleRQ);
-		SDL_RenderCopy(renderer, scoreTexture, &RenemyScore, &EnemyRQ);
+		graphics.blitSurface(scoreTexture, &RpaddleScore, &paddleRQ);
+		graphics.blitSurface(scoreTexture, &RenemyScore, &EnemyRQ);
 
 	}
 private:
@@ -344,13 +264,13 @@ private:
 int main(int argc, char* args[]) 
 {
 	//All the processes needed to begin.
-	init();
+	Graphics graphics;
+	graphics.init();
 	SDL_Event e;
-	loadMedia();
-	Paddle paddle;
-	Ball ball;
-	EnemyPaddle enemyPaddle;
-	Scoreboard scoreboard;
+	Paddle paddle(graphics);
+	Ball ball(graphics);
+	EnemyPaddle enemyPaddle(graphics);
+	Scoreboard scoreboard(graphics);
 
 	//Some variables for flow control.
 	bool gameStarted = false;
@@ -373,7 +293,7 @@ int main(int argc, char* args[])
 				{
 					if (gameStarted == false && gameOver == false)
 					{
-						gTexture = loadTexture("Sprites/GameBackground.png");
+						graphics.setBackground("Sprites/GameBackground.png");
 						gameStarted = true;
 					}
 				}
@@ -381,42 +301,39 @@ int main(int argc, char* args[])
 			paddle.handleEvent(e);
 		}
 		
-		SDL_RenderClear(renderer);
-		SDL_RenderCopy(renderer, gTexture, NULL, NULL);
+		graphics.clear();
 		
 		if (gameStarted == true)
 		{
-			scoreboard.render(renderer);
+			scoreboard.render(graphics);
 			paddle.Move();
 			ball.Move();
 			enemyPaddle.Move();
-			paddle.render(renderer);
-			ball.Render(renderer);
-			enemyPaddle.render(renderer);
+			paddle.render(graphics);
+			ball.Render(graphics);
+			enemyPaddle.render(graphics);
 		}
 
 		if (paddleScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
-			SDL_RenderClear(renderer);
-			gTexture = loadTexture("Sprites/WinScreen.png");
-			SDL_RenderCopy(renderer, gTexture, NULL, NULL);
+			graphics.setBackground("Sprites/WinScreen.png");
+			graphics.clear();
 		}
 
 		if (enemyScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
-			SDL_RenderClear(renderer);
-			gTexture = loadTexture("Sprites/LoseScreen.png");
-			SDL_RenderCopy(renderer, gTexture, NULL, NULL);
+			graphics.setBackground("Sprites/LoseScreen.png");
+			graphics.clear();
 		}
 		
-		SDL_RenderPresent(renderer);
+		graphics.flip();
 	}
 	
 	
-	close();
+	graphics.close();
 	return 0;
 }
