@@ -9,80 +9,11 @@
 #include "Objects/Graphics.h"
 #include "Objects/Ball.h"
 #include "Objects/Scoreboard.h"
+#include "Objects/Paddle.h"
 
 //These variables were made so that the classes could interact.
 int playerScore = 0;
 int cpuScore = 0;
-
-class Paddle
-{
-public:
-	//Initializes the paddle with all of its characteristics.
-	Paddle()
-	{
-
-	}
-
-	Paddle(Graphics &graphics)
-	{
-		paddleTexture = graphics.loadTexture("Sprites/Paddle.png");
-		y = 470 - 96;
-		maxJumpVel = -15;
-		maxFallVel = 15;
-		jumpBoost = -15;
-	}
-
-	//Moves the paddle based on the velocity. Then changes the velocity. Also puts limits on minimum and maximum values. Updates global variables.
-	void move(Ball &ball)
-	{
-		y = y + velocity;
-		velocity = velocity + 1;
-
-		if (y < 10)
-		{
-			y = 10;
-			velocity = 0;
-		}
-		if (y > 470 - 96)
-		{
-			y = 470 - 96;
-			velocity = 0;
-		}
-		if (velocity > maxFallVel)
-		{
-			velocity = maxFallVel;
-		}
-		if (velocity < maxJumpVel)
-		{
-			velocity = maxJumpVel;
-		}
-
-		ball.bounceOffPaddle(velocity, y, false);
-	}
-
-	//Renders the paddle to the screen.
-	void render(Graphics &graphics)
-	{
-		SDL_Rect renderQuad = { 10, y, 32, 96 };
-		graphics.blitSurface(paddleTexture, NULL, &renderQuad);
-	}
-
-	//Takes input to jump.
-	void handleEvent(SDL_Event& e)
-	{
-		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE)
-		{
-			velocity = jumpBoost;
-		}
-	}
-private:
-	int y;
-	int velocity;
-	int maxJumpVel;
-	int maxFallVel;
-	int jumpBoost;
-	SDL_Texture* paddleTexture;
-};
 
 //Pretty much the same as 'Paddle'. Just small differences in AI.
 class EnemyPaddle
@@ -233,7 +164,6 @@ int main(int argc, char* args[])
 		graphics.flip();
 		if (scoreChange != 0) Sleep(globals::SLEEP_TIME);
 	}
-	
 	
 	graphics.close();
 	return 0;
