@@ -10,9 +10,6 @@
 #include "Objects/Ball.h"
 
 //These variables were made so that the classes could interact.
-int yPaddle;
-int yEnemy;
-int paddleVelocity;
 int enemyVelocity;
 int paddleScore = 0;
 int enemyScore = 0;
@@ -59,8 +56,6 @@ public:
 		{
 			velocity = maxJumpVel;
 		}
-		yPaddle = y;
-		paddleVelocity = velocity;
 
 		ball.bounceOffPaddle(velocity, y, false);
 	}
@@ -133,7 +128,6 @@ public:
 		{
 			jump();
 		}
-		yEnemy = y;
 		enemyVelocity = velocity;
 
 		ball.bounceOffPaddle(velocity, y, true);
