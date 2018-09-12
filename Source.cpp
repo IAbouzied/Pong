@@ -7,14 +7,13 @@
 
 #include "Objects/Globals.h"
 #include "Objects/Graphics.h"
+#include "Objects/Ball.h"
 
 //These variables were made so that the classes could interact.
 int yPaddle;
 int yEnemy;
-int yBall;
 int paddleVelocity;
 int enemyVelocity;
-int ballxVelocity;
 int paddleScore = 0;
 int enemyScore = 0;
 
@@ -37,7 +36,7 @@ public:
 	}
 
 	//Moves the paddle based on the velocity. Then changes the velocity. Also puts limits on minimum and maximum values. Updates global variables.
-	void Move()
+	void move(Ball &ball)
 	{
 		y = y + velocity;
 		velocity = velocity + 1;
@@ -62,6 +61,8 @@ public:
 		}
 		yPaddle = y;
 		paddleVelocity = velocity;
+
+		ball.bounceOffPaddle(velocity, y, false);
 	}
 
 	//Renders the paddle to the screen.
@@ -104,7 +105,7 @@ public:
 		velocity = 0;
 	}
 
-	void Move()
+	void move(Ball &ball)
 	{
 		y = y + velocity;
 		velocity = velocity + 1;
@@ -128,12 +129,14 @@ public:
 			velocity = maxJumpVel;
 		}
 
-		if (y - 48 > yBall && ballxVelocity > 0 && velocity > -13)
+		if (ball.isMovingRight() && y - 48 > ball.getBallHeight() && velocity > -13)
 		{
 			jump();
 		}
 		yEnemy = y;
 		enemyVelocity = velocity;
+
+		ball.bounceOffPaddle(velocity, y, true);
 	}
 
 	void jump()
@@ -154,83 +157,6 @@ private:
 	int maxFallVel;
 	int jumpBoost;
 	int velocity;
-};
-
-class Ball
-{
-public:
-	Ball() {}
-
-	Ball(Graphics &graphics)
-	{
-		ballTexture = graphics.loadTexture("Sprites/Ball.png");
-		xPos = 480;
-		yPos = 224;
-		xVel = 10;
-		yVel = 5;
-	}
-
-	//Moves ball and a lot of collision detection. Also some stuff about curving the ball when its hit at an angle.
-	void Move()
-	{
-		xPos = xPos + xVel;
-		yPos = yPos + yVel;
-
-		if (xPos > globals::SCREEN_WIDTH)
-		{
-			xPos = 160;
-			yPos = 224;
-			yVel = rand() % 19 - 10;
-			paddleScore += 1;
-			Sleep(200);
-		}
-		if (xPos < 0)
-		{
-			xPos = 480;
-			yPos = 224;
-			yVel = rand()%19 - 10;
-			enemyScore += 1;
-			Sleep(200);
-		}
-		if (yPos > globals::SCREEN_HEIGHT - 32)
-		{
-			yPos = globals::SCREEN_HEIGHT- 32;
-			yVel = -yVel;
-		}
-		if (yPos < 0)
-		{
-			yPos = 0;
-			yVel = -yVel;
-		}
-		if (xPos / 42 == 1 && xPos % 42 <= std::abs(xVel) && yPos > yPaddle - 32 && yPos < yPaddle + 96 && xVel < 0)
-		{
-			xVel = -xVel;
-			yVel = yVel + paddleVelocity / 2;
-		}
-		if (xPos / (globals::SCREEN_WIDTH - 74) == 1 && xPos % (globals::SCREEN_WIDTH - 74) <= xVel && yPos > yEnemy - 32 && yPos < yEnemy + 96 && xVel > 0)
-		{
-			yVel = yVel + enemyVelocity / 2;
-			xVel = -xVel;
-		}
-		if (abs(yVel) > 12)
-		{
-			yVel = yVel / abs(yVel) * 12;
-		}
-		yBall = yPos;
-		ballxVelocity = xVel;
-	}
-
-	//Renders the ball to the screen.
-	void Render(Graphics &graphics)
-	{
-		SDL_Rect renderQuad = { xPos, yPos, 32, 32 };
-		graphics.blitSurface(ballTexture, NULL, &renderQuad);
-	}
-private:
-	int xPos, yPos, xVel, yVel;
-	SDL_Texture* ballTexture;
-
-
 };
 
 class Scoreboard
@@ -302,17 +228,26 @@ int main(int argc, char* args[])
 		}
 		
 		graphics.clear();
-		
+		int scoreChange = 0;
+
+		//Game loop
 		if (gameStarted == true)
 		{
 			scoreboard.render(graphics);
-			paddle.Move();
-			ball.Move();
-			enemyPaddle.Move();
+
+			//Moving
+			paddle.move(ball);
+			enemyPaddle.move(ball);
+			scoreChange = ball.move();
+
+			//Rendering
 			paddle.render(graphics);
-			ball.Render(graphics);
+			ball.render(graphics);
 			enemyPaddle.render(graphics);
 		}
+
+		if (scoreChange == 1) paddleScore++;
+		else if (scoreChange == -1) enemyScore++;
 
 		if (paddleScore > 10)
 		{
@@ -331,6 +266,7 @@ int main(int argc, char* args[])
 		}
 		
 		graphics.flip();
+		if (scoreChange != 0) Sleep(globals::SLEEP_TIME);
 	}
 	
 	
