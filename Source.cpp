@@ -1,8 +1,3 @@
-#include <SDL.h>
-#include <iostream>
-#include <SDL_image.h>
-#include <string>
-#include <cmath>
 #include <Windows.h>
 
 #include "Objects/Globals.h"
@@ -10,78 +5,11 @@
 #include "Objects/Ball.h"
 #include "Objects/Scoreboard.h"
 #include "Objects/Paddle.h"
+#include "Objects/EnemyPaddle.h"
 
 //These variables were made so that the classes could interact.
 int playerScore = 0;
 int cpuScore = 0;
-
-//Pretty much the same as 'Paddle'. Just small differences in AI.
-class EnemyPaddle
-{
-public:
-	EnemyPaddle() {}
-
-	EnemyPaddle(Graphics &graphics)
-	{
-		paddleTexture = graphics.loadTexture("Sprites/EnemyPaddle.png");
-		y = 470 - 96;
-		maxJumpVel = -15;
-		maxFallVel = 15;
-		jumpBoost = -15;
-		velocity = 0;
-	}
-
-	void move(Ball &ball)
-	{
-		y = y + velocity;
-		velocity = velocity + 1;
-
-		if (y < 10)
-		{
-			y = 10;
-			velocity = 0;
-		}
-		if (y > 470 - 96)
-		{
-			y = 470 - 96;
-			velocity = 0;
-		}
-		if (velocity > maxFallVel)
-		{
-			velocity = maxFallVel;
-		}
-		if (velocity < maxJumpVel)
-		{
-			velocity = maxJumpVel;
-		}
-
-		if (ball.isMovingRight() && y - 48 > ball.getBallHeight() && velocity > -13)
-		{
-			jump();
-		}
-
-		ball.bounceOffPaddle(velocity, y, true);
-	}
-
-	void jump()
-	{
-		velocity = jumpBoost;
-	}
-
-	void render(Graphics &graphics)
-	{
-		SDL_Rect renderQuad = { globals::SCREEN_WIDTH - 42, y, 32, 96 };
-		graphics.blitSurface(paddleTexture, NULL, &renderQuad);
-	}
-
-private:
-	int y;
-	SDL_Texture* paddleTexture;
-	int maxJumpVel;
-	int maxFallVel;
-	int jumpBoost;
-	int velocity;
-};
 
 int main(int argc, char* args[]) 
 {
