@@ -1,5 +1,4 @@
 #include <cmath>
-#include <Windows.h>
 
 #include "Ball.h"
 #include "Globals.h"
