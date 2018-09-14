@@ -20,26 +20,25 @@ void EnemyPaddle::move(Ball &ball)
 {
 	y = y + velocity;
 	velocity = velocity + 1;
-
-	if (y < 10)
-	{
+	
+	//Collision detection
+	if (y < 10) {
 		y = 10;
 		velocity = 0;
 	}
-	if (y > 470 - 96)
-	{
+	if (y > 470 - 96) {
 		y = 470 - 96;
 		velocity = 0;
 	}
-	if (velocity > maxFallVel)
-	{
+	//Velocity constraints
+	if (velocity > maxFallVel) {
 		velocity = maxFallVel;
 	}
-	if (velocity < maxJumpVel)
-	{
+	if (velocity < maxJumpVel) {
 		velocity = maxJumpVel;
 	}
 
+	//Deciding whether AI should jump
 	if (ball.isMovingRight() && y - 48 > ball.getBallHeight() && velocity > -13)
 	{
 		jump();

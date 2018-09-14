@@ -16,12 +16,12 @@ Paddle::Paddle(Graphics &graphics)
 	jumpBoost = -15;
 }
 
-//Moves the paddle based on the velocity. Then changes the velocity. Also puts limits on minimum and maximum values. Updates global variables.
 void Paddle::move(Ball &ball)
 {
 	y = y + velocity;
 	velocity = velocity + 1;
 
+	//Collision detection
 	if (y < 10)
 	{
 		y = 10;
@@ -32,6 +32,8 @@ void Paddle::move(Ball &ball)
 		y = 470 - 96;
 		velocity = 0;
 	}
+
+	//Velocity constraints
 	if (velocity > maxFallVel)
 	{
 		velocity = maxFallVel;
@@ -41,10 +43,10 @@ void Paddle::move(Ball &ball)
 		velocity = maxJumpVel;
 	}
 
+	//Let the ball detect if it should bounce
 	ball.bounceOffPaddle(velocity, y, false);
 }
 
-//Renders the paddle to the screen.
 void Paddle::render(Graphics &graphics)
 {
 	SDL_Rect renderQuad = { 10, y, 32, 96 };

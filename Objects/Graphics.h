@@ -23,8 +23,6 @@ public:
 	bool init();
 	//Shuts down everything before exiting the application.
 	void close();
-
-	SDL_Renderer* getRenderer() const;
 private:
 	SDL_Window* _window;
 	SDL_Renderer* _renderer;

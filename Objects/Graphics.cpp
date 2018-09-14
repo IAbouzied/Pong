@@ -17,9 +17,8 @@ void Graphics::blitSurface(SDL_Texture* texture, SDL_Rect* sourceRectangle, SDL_
 	SDL_RenderCopy(_renderer, texture, sourceRectangle, destinationRectangle);
 }
 
-//Function for giving textures their image.
+//Loads an image from filepath
 SDL_Texture* Graphics::loadTexture(std::string path) {
-	//Loads a texture through this process. Texture made. Surface made. Texture made into surface. Surface deleted. Texture returned.
 	SDL_Texture* newTexture = NULL;
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	newTexture = SDL_CreateTextureFromSurface(_renderer, loadedSurface);
@@ -28,9 +27,7 @@ SDL_Texture* Graphics::loadTexture(std::string path) {
 	return newTexture;
 }
 
-//Loads all of the pictures needed.
 void Graphics::setBackground(std::string path) {
-	//Backgroung picture.
 	_background = loadTexture(path);
 }
 
@@ -40,14 +37,14 @@ void Graphics::flip() {
 
 void Graphics::clear() {
 	SDL_RenderClear(_renderer);
+	//Load background image after clear
 	SDL_RenderCopy(_renderer, _background, NULL, NULL);
 }
 
-//Initializes the window, renderer, and PNG/SDL_Image stuff
 bool Graphics::init() {
 	bool success = true;
 
-	//Initialize SDL. < 0 means that initialization failed.
+	//Initialize SDL. 
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{
 		std::cout << "Couldnt initialize SDL" << std::endl;
@@ -73,7 +70,7 @@ bool Graphics::init() {
 			}
 			else
 			{
-				//Setting the renderer color. Still not sure why this has to be done.
+				//Setting the renderer color. 
 				SDL_SetRenderDrawColor(_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
 				//Making it possible to load PNG images.
@@ -91,7 +88,6 @@ bool Graphics::init() {
 	return success;
 }
 
-//Shuts down everything before exiting the application.
 void Graphics::close() {
 	//Exits out of everything. Ball and Paddle sprites not included.
 	SDL_DestroyWindow(_window);
@@ -102,8 +98,4 @@ void Graphics::close() {
 	_renderer = NULL;
 	IMG_Quit();
 	SDL_Quit();
-}
-
-SDL_Renderer* Graphics::getRenderer() const {
-	return _renderer;
 }

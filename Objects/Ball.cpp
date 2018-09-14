@@ -15,7 +15,7 @@ Ball::Ball(Graphics &graphics)
 	yVel = 5;
 }
 
-//Moves ball and a lot of collision detection. Also some stuff about curving the ball when its hit at an angle.
+//Movement and Collision detection
 int Ball::move()
 {
 	int scoreModifier = 0;
@@ -54,13 +54,14 @@ int Ball::move()
 	return scoreModifier;
 }
 
-//Renders the ball to the screen.
+
 void Ball::render(Graphics &graphics)
 {
 	SDL_Rect renderQuad = { xPos, yPos, 32, 32 };
 	graphics.blitSurface(ballTexture, NULL, &renderQuad);
 }
 
+//Helpers for paddle interaction
 bool Ball::isMovingRight() {
 	return xVel > 0;
 }
@@ -69,8 +70,8 @@ int Ball::getBallHeight() {
 	return yPos;
 }
 
+//Collision detection with paddles. Paddle velocity influences how the ball bounces.
 void Ball::bounceOffPaddle(int paddleVelocity, int yPaddlePos, bool isEnemy) {
-	//Being hit by paddles
 	if (!isEnemy && xPos / 42 == 1 && xPos % 42 <= std::abs(xVel) && yPos > yPaddlePos - 32 && yPos < yPaddlePos + 96 && xVel < 0)
 	{
 		xVel = -xVel;

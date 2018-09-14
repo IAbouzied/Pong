@@ -16,16 +16,12 @@ Game::Game() {
 }
 
 void Game::loop() {
-	//All the processes needed to begin.
-	Graphics graphics;
-	graphics.init();
 	SDL_Event e;
-	Paddle paddle(graphics);
-	Ball ball(graphics);
-	EnemyPaddle enemyPaddle(graphics);
-	Scoreboard scoreboard(graphics);
+	Paddle paddle(_graphics);
+	Ball ball(_graphics);
+	EnemyPaddle enemyPaddle(_graphics);
+	Scoreboard scoreboard(_graphics);
 
-	//Some variables for flow control.
 	bool gameStarted = false;
 	bool quit = false;
 	bool gameOver = false;
@@ -33,6 +29,7 @@ void Game::loop() {
 	//Main game loop.
 	while (!quit)
 	{
+		//Event handling
 		while (SDL_PollEvent(&e) != 0)
 		{
 			if (e.type == SDL_QUIT)
@@ -46,7 +43,7 @@ void Game::loop() {
 				{
 					if (gameStarted == false && gameOver == false)
 					{
-						graphics.setBackground("Sprites/GameBackground.png");
+						_graphics.setBackground("Sprites/GameBackground.png");
 						gameStarted = true;
 					}
 				}
@@ -54,13 +51,14 @@ void Game::loop() {
 			paddle.handleEvent(e);
 		}
 
-		graphics.clear();
+		_graphics.clear();
+
+		//Tracks whether anyone has scored
 		int scoreChange = 0;
 
-		//Game loop
 		if (gameStarted == true)
 		{
-			scoreboard.render(graphics, _playerScore, _cpuScore);
+			scoreboard.render(_graphics, _playerScore, _cpuScore);
 
 			//Moving
 			paddle.move(ball);
@@ -68,33 +66,35 @@ void Game::loop() {
 			scoreChange = ball.move();
 
 			//Rendering
-			paddle.render(graphics);
-			ball.render(graphics);
-			enemyPaddle.render(graphics);
+			paddle.render(_graphics);
+			ball.render(_graphics);
+			enemyPaddle.render(_graphics);
 		}
 
 		if (scoreChange == 1) _playerScore++;
 		else if (scoreChange == -1) _cpuScore++;
 
+		//Game end screens
 		if (_playerScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
-			graphics.setBackground("Sprites/WinScreen.png");
-			graphics.clear();
+			_graphics.setBackground("Sprites/WinScreen.png");
+			_graphics.clear();
 		}
 
 		if (_cpuScore > 10)
 		{
 			gameOver = true;
 			gameStarted = false;
-			graphics.setBackground("Sprites/LoseScreen.png");
-			graphics.clear();
+			_graphics.setBackground("Sprites/LoseScreen.png");
+			_graphics.clear();
 		}
 
-		graphics.flip();
+		_graphics.flip();
+		//Pause time to reset the ball
 		if (scoreChange != 0) Sleep(globals::SLEEP_TIME);
 	}
 
-	graphics.close();
+	_graphics.close();
 }
